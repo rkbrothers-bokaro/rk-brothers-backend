@@ -1,0 +1,43 @@
+steps:
+  # Step 1: Build Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'asia-south1-docker.pkg.dev/$PROJECT_ID/rk-brothers-backend/app:$COMMIT_SHA'
+      - '-t'
+      - 'asia-south1-docker.pkg.dev/$PROJECT_ID/rk-brothers-backend/app:latest'
+      - '.'
+
+  # Step 2: Push to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '--all-tags'
+      - 'asia-south1-docker.pkg.dev/$PROJECT_ID/rk-brothers-backend/app'
+
+  # Step 3: Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'rk-brothers-backend'
+      - '--image=asia-south1-docker.pkg.dev/$PROJECT_ID/rk-brothers-backend/app:$COMMIT_SHA'
+      - '--region=asia-south1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--port=8080'
+      - '--memory=512Mi'
+      - '--cpu=1'
+      - '--min-instances=0'
+      - '--max-instances=3'
+      - '--set-env-vars=SPRING_PROFILES_ACTIVE=prod,DB_HOST=pg-d862388-rkbrothers-7d44.a.aivencloud.com,DB_PORT=14867,DB_NAME=defaultdb,DB_USERNAME=avnadmin,DB_SSLMODE=require'
+      - '--set-secrets=DB_PASSWORD=rk-brothers-db-password:latest,JWT_SECRET=rk-brothers-jwt-secret:latest'
+
+images:
+  - 'asia-south1-docker.pkg.dev/$PROJECT_ID/rk-brothers-backend/app:$COMMIT_SHA'
+  - 'asia-south1-docker.pkg.dev/$PROJECT_ID/rk-brothers-backend/app:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

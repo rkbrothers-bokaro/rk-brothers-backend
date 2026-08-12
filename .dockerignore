@@ -1,0 +1,27 @@
+# Build artifacts
+target/
+*.jar
+*.war
+
+# Runtime
+uploads/
+
+# Secrets
+.env
+*.local
+
+# Version control
+.git/
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
