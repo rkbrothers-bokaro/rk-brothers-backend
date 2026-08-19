@@ -3,6 +3,8 @@ spring:
     name: rkbrothers-backend
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
+  flyway:
+    enabled: true
 
 jwt:
   secret: ${JWT_SECRET:rk-brothers-local-secret-key-2024}
