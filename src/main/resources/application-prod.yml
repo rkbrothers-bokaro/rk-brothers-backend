@@ -5,10 +5,10 @@ spring:
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 3
+      maximum-pool-size: 2
       minimum-idle: 1
-      connection-timeout: 60000
-      initialization-fail-timeout: 60000
+      connection-timeout: 30000
+      initialization-fail-timeout: -1
       connection-test-query: SELECT 1
       data-source-properties:
         ssl: true
@@ -42,6 +42,15 @@ spring:
         connectiontimeout: 5000
         timeout: 5000
         writetimeout: 5000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
 
 logging:
   level:
