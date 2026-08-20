@@ -32,3 +32,4 @@ Thumbs.db
 uploads/
 *.log
 .env
+application-local.yml
