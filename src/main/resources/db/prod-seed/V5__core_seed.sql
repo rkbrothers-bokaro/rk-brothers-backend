@@ -12,15 +12,8 @@
 -- Hashes are bcrypt (cost 10) for 'admin123' / 'staff123', generated with
 -- the app's own BCryptPasswordEncoder and verified with matches() before
 -- being committed here. Change these passwords after first login.
---
--- ON CONFLICT ... DO UPDATE (not DO NOTHING): a row for phone 9999999999
--- was found live in prod before this migration ever ran, so it must have
--- been inserted manually with one of the bcrypt hashes floated earlier in
--- the debugging session -- none of which actually decoded to 'admin123'
--- (verified with matches()). DO UPDATE overwrites any such bad password
--- with the verified-correct hash instead of silently skipping it.
 INSERT INTO users (username, phone, password, email, full_name, role, enabled, created_at, updated_at)
 VALUES
   ('admin', '9999999999', '$2a$10$jDrtp/6KZZOmJLVEBmTAvObFs7hPDHUSapGpDU4Wtxnl3tendAhhK', 'admin@rkbrothers.local', 'Default Admin', 'ADMIN', true, now(), now()),
   ('staff', '8888888888', '$2a$10$kMjmzwPhEiOVObZH.zNAReh0iU8I1hDMRgPAYJ.HKwcuQfPOvwjXS', 'staff@rkbrothers.local', 'Default Staff', 'STAFF', true, now(), now())
-ON CONFLICT (phone) DO UPDATE SET password = EXCLUDED.password, updated_at = now();
+ON CONFLICT (phone) DO NOTHING;
