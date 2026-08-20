@@ -16,6 +16,7 @@ app:
     base-dir: ${UPLOAD_BASE_DIR:uploads}
   admin-email: ${ADMIN_EMAIL:}
   mail-from: ${MAIL_FROM:}
+  admin-setup-key: ${ADMIN_SETUP_KEY:}
 
 gemini:
   api:
