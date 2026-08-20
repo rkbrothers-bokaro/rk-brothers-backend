@@ -32,12 +32,12 @@ public interface JcbDailyLogRepository extends JpaRepository<JcbDailyLog, Long> 
 
     @Query("""
             SELECT j FROM JcbDailyLog j
-            WHERE (:vehicleId IS NULL OR j.vehicle.id = :vehicleId)
-            AND (:workOrderId IS NULL OR j.workOrder.id = :workOrderId)
-            AND (:operatorId IS NULL OR j.operator.id = :operatorId)
-            AND (:startDate IS NULL OR j.date >= :startDate)
-            AND (:endDate IS NULL OR j.date <= :endDate)
-            AND (:submittedById IS NULL OR j.submittedBy.id = :submittedById)
+            WHERE (CAST(:vehicleId AS Long) IS NULL OR j.vehicle.id = :vehicleId)
+            AND (CAST(:workOrderId AS Long) IS NULL OR j.workOrder.id = :workOrderId)
+            AND (CAST(:operatorId AS Long) IS NULL OR j.operator.id = :operatorId)
+            AND (CAST(:startDate AS LocalDate) IS NULL OR j.date >= :startDate)
+            AND (CAST(:endDate AS LocalDate) IS NULL OR j.date <= :endDate)
+            AND (CAST(:submittedById AS Long) IS NULL OR j.submittedBy.id = :submittedById)
             """)
     Page<JcbDailyLog> findAllWithFilters(@Param("vehicleId") Long vehicleId,
                                           @Param("workOrderId") Long workOrderId,

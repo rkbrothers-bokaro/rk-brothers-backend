@@ -32,12 +32,12 @@ public interface TipperDailyLogRepository extends JpaRepository<TipperDailyLog, 
 
     @Query("""
             SELECT t FROM TipperDailyLog t
-            WHERE (:vehicleId IS NULL OR t.vehicle.id = :vehicleId)
-            AND (:workOrderId IS NULL OR t.workOrder.id = :workOrderId)
-            AND (:driverId IS NULL OR t.driver.id = :driverId)
-            AND (:startDate IS NULL OR t.date >= :startDate)
-            AND (:endDate IS NULL OR t.date <= :endDate)
-            AND (:submittedById IS NULL OR t.submittedBy.id = :submittedById)
+            WHERE (CAST(:vehicleId AS Long) IS NULL OR t.vehicle.id = :vehicleId)
+            AND (CAST(:workOrderId AS Long) IS NULL OR t.workOrder.id = :workOrderId)
+            AND (CAST(:driverId AS Long) IS NULL OR t.driver.id = :driverId)
+            AND (CAST(:startDate AS LocalDate) IS NULL OR t.date >= :startDate)
+            AND (CAST(:endDate AS LocalDate) IS NULL OR t.date <= :endDate)
+            AND (CAST(:submittedById AS Long) IS NULL OR t.submittedBy.id = :submittedById)
             """)
     Page<TipperDailyLog> findAllWithFilters(@Param("vehicleId") Long vehicleId,
                                              @Param("workOrderId") Long workOrderId,
