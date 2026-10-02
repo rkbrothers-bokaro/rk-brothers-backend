@@ -52,8 +52,12 @@ public class VehicleDocumentController {
     }
 
     @GetMapping
-    public ApiResponse<List<VehicleDocumentResponseDto>> byVehicle(@RequestParam Long vehicleId) {
-        return ApiResponse.success(vehicleDocumentService.getDocumentsByVehicle(vehicleId));
+    public ApiResponse<List<VehicleDocumentResponseDto>> byVehicle(@RequestParam(required = false) Long vehicleId) {
+        if (vehicleId != null) {
+            return ApiResponse.success(vehicleDocumentService.getDocumentsByVehicle(vehicleId));
+        } else {
+            return ApiResponse.success(vehicleDocumentService.getAllDocuments());
+        }
     }
 
     @GetMapping("/expiring")
@@ -62,12 +66,10 @@ public class VehicleDocumentController {
     }
 
     @GetMapping("/{id}/file")
-    public ResponseEntity<Void> viewFile(@PathVariable Long id) {
+    public ApiResponse<String> viewFile(@PathVariable Long id) {
         String storageKey = vehicleDocumentService.getDocumentStorageKey(id);
         String redirectUrl = (publicUrl != null && !publicUrl.isBlank() ? publicUrl : "") + "/" + storageKey;
-        return ResponseEntity.status(HttpStatus.FOUND)
-                .location(URI.create(redirectUrl))
-                .build();
+        return ApiResponse.success(redirectUrl);
     }
 
     @DeleteMapping("/{id}")

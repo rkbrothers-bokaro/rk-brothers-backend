@@ -27,7 +27,7 @@ import java.util.Map;
 public class GeminiVisionService {
 
     private static final String API_URL_TEMPLATE =
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=%s";
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=%s";
 
         private static final String PROMPT = """
             This is an Indian vehicle document (e.g., Insurance Policy, PUC/Pollution Certificate, Certificate of Fitness, RC). \

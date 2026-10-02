@@ -99,6 +99,14 @@ public class VehicleDocumentService {
     }
 
     @Transactional(readOnly = true)
+    public List<VehicleDocumentResponseDto> getAllDocuments() {
+        return vehicleDocumentRepository.findAll().stream()
+                .sorted(Comparator.comparing(VehicleDocument::getExpiryDate))
+                .map(VehicleDocumentResponseDto::from)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public List<VehicleDocumentResponseDto> getExpiringDocuments(int days) {
         LocalDate today = LocalDate.now();
         return vehicleDocumentRepository.findByExpiryDateBetween(today, today.plusDays(days)).stream()
