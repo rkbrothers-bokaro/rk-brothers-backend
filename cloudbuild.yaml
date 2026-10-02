@@ -32,8 +32,8 @@ steps:
       - '--cpu=1'
       - '--min-instances=0'
       - '--max-instances=3'
-      - '--set-env-vars=SPRING_PROFILES_ACTIVE=prod'
-      - '--set-secrets=DB_URL=DB_URL:latest,DB_USERNAME=DB_USERNAME:latest,DB_PASSWORD=DB_PASSWORD:latest,JWT_SECRET=JWT_SECRET:latest,ADMIN_EMAIL=ADMIN_EMAIL:latest,FRONTEND_URL=FRONTEND_URL:latest,MAIL_USERNAME=MAIL_USERNAME:latest,MAIL_PASSWORD=MAIL_PASSWORD:latest'
+      - '--set-env-vars=SPRING_PROFILES_ACTIVE=prod,R2_ENDPOINT=https://5e0e63c0ccca604674f07cff180b4e0e.r2.cloudflarestorage.com,R2_BUCKET=rk-brothers,R2_PUBLIC_URL=https://pub-2b0551d0c9674c7da1e49313e85833d7.r2.dev'
+      - '--set-secrets=R2_ACCESS_KEY=R2_ACCESS_KEY:latest,R2_SECRET_KEY=R2_SECRET_KEY:latest,DB_URL=DB_URL:latest,DB_USERNAME=DB_USERNAME:latest,DB_PASSWORD=DB_PASSWORD:latest,JWT_SECRET=JWT_SECRET:latest,ADMIN_EMAIL=ADMIN_EMAIL:latest,FRONTEND_URL=FRONTEND_URL:latest,MAIL_USERNAME=MAIL_USERNAME:latest,MAIL_PASSWORD=MAIL_PASSWORD:latest,GEMINI_API_KEY=GEMINI_API_KEY:latest'
 
 images:
   - 'asia-south1-docker.pkg.dev/$PROJECT_ID/rk-brothers-backend/app:$COMMIT_SHA'
