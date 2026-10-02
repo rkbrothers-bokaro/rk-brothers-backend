@@ -9,6 +9,8 @@ spring:
       max-request-size: 20MB
   flyway:
     enabled: true
+    ignore-missing-migrations: true
+    out-of-order: true
 
 jwt:
   secret: ${JWT_SECRET:rk-brothers-local-secret-key-2024}
