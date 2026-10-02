@@ -45,6 +45,9 @@ public class VehicleDocument extends BaseEntity {
     @Column(name = "document_url", length = 500)
     private String documentUrl;
 
+    @Column(name = "original_file_name", length = 255)
+    private String originalFileName;
+
     @Column(name = "ai_parsed_data", length = 4000)
     private String aiParsedData;
 

@@ -62,6 +62,7 @@ public class VehicleDocumentService {
                 // the step where the admin is expected to set the real date.
                 .expiryDate(aiResult.expiryDate() != null ? aiResult.expiryDate() : LocalDate.now())
                 .documentUrl(uploaded.storageKey())
+                .originalFileName(uploaded.originalFilename())
                 .aiParsedData(toJson(aiResult))
                 .build();
 
@@ -73,11 +74,12 @@ public class VehicleDocumentService {
         VehicleDocument document = vehicleDocumentRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.of(ENTITY_NAME, id));
 
-        Vehicle vehicle = vehicleRepository.findById(request.vehicleId())
-                .filter(Vehicle::isActive)
-                .orElseThrow(() -> ResourceNotFoundException.of("Vehicle", request.vehicleId()));
-
-        document.setVehicle(vehicle);
+        if (request.vehicleId() != null) {
+            Vehicle vehicle = vehicleRepository.findById(request.vehicleId())
+                    .filter(Vehicle::isActive)
+                    .orElseThrow(() -> ResourceNotFoundException.of("Vehicle", request.vehicleId()));
+            document.setVehicle(vehicle);
+        }
         document.setDocumentType(request.documentType());
         document.setDocumentNo(request.documentNo());
         document.setIssuedDate(request.issuedDate());
@@ -101,6 +103,13 @@ public class VehicleDocumentService {
                 .sorted(Comparator.comparing(VehicleDocument::getExpiryDate))
                 .map(VehicleDocumentResponseDto::from)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public String getDocumentStorageKey(Long id) {
+        return vehicleDocumentRepository.findById(id)
+                .map(VehicleDocument::getDocumentUrl)
+                .orElseThrow(() -> ResourceNotFoundException.of(ENTITY_NAME, id));
     }
 
     @Auditable(entityName = ENTITY_NAME, action = AuditAction.DELETE)

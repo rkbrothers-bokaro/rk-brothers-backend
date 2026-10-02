@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Pattern;
 import java.time.LocalDate;
 
 public record VehicleDocumentRequestDto(
-        @NotNull(message = "Vehicle is required")
         Long vehicleId,
 
         @Pattern(regexp = "insurance|gate_pass|puc|fitness|tax|state_permit|other",

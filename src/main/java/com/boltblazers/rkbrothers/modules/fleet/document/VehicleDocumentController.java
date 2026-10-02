@@ -19,6 +19,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import java.net.URI;
+
 
 import java.util.List;
 
@@ -29,6 +33,9 @@ import java.util.List;
 public class VehicleDocumentController {
 
     private final VehicleDocumentService vehicleDocumentService;
+
+    @Value("${R2_PUBLIC_URL:}")
+    private String publicUrl;
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<VehicleDocumentResponseDto>> upload(@RequestParam Long vehicleId,
@@ -52,6 +59,15 @@ public class VehicleDocumentController {
     @GetMapping("/expiring")
     public ApiResponse<List<VehicleDocumentResponseDto>> expiring(@RequestParam(defaultValue = "30") int days) {
         return ApiResponse.success(vehicleDocumentService.getExpiringDocuments(days));
+    }
+
+    @GetMapping("/{id}/file")
+    public ResponseEntity<Void> viewFile(@PathVariable Long id) {
+        String storageKey = vehicleDocumentService.getDocumentStorageKey(id);
+        String redirectUrl = (publicUrl != null && !publicUrl.isBlank() ? publicUrl : "") + "/" + storageKey;
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(URI.create(redirectUrl))
+                .build();
     }
 
     @DeleteMapping("/{id}")

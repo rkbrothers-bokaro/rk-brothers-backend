@@ -29,14 +29,17 @@ public class GeminiVisionService {
     private static final String API_URL_TEMPLATE =
             "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=%s";
 
-    private static final String PROMPT = """
-            This is a vehicle document image. Extract the following \
-            information and respond ONLY in this exact JSON format with no \
-            other text:
+        private static final String PROMPT = """
+            This is an Indian vehicle document (e.g., Insurance Policy, PUC/Pollution Certificate, Certificate of Fitness, RC). \
+            Extract the following information carefully. Terminology varies wildly: \
+            - 'documentNo': Policy No., Certificate SL. No., Application No, Receipt No, etc. \
+            - 'issuedDate': Date of Issue, Period of cover start date, Date, Inspected on, Receipt Date. \
+            - 'expiryDate': Period of cover end date, Validity upto, Certificate will expire on, Valid till, Next Inspection Due Date. \
+            Respond ONLY in this exact JSON format with no other text (ensure dates are strictly YYYY-MM-DD):
             {
               "documentType": "insurance|gate_pass|puc|fitness|tax|state_permit|other",
-              "documentNo": "document number or null",
-              "vehicleNo": "vehicle registration number or null",
+              "documentNo": "extracted document number or null",
+              "vehicleNo": "vehicle registration number (e.g. JH09...) or null",
               "issuedDate": "YYYY-MM-DD or null",
               "expiryDate": "YYYY-MM-DD or null",
               "confidence": "high|medium|low"
