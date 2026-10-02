@@ -20,6 +20,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -47,8 +49,8 @@ public class VehicleDocumentService {
         AiParseResultDto aiResult = geminiVisionService.parseDocument(file);
 
         String resolvedDocumentType = (HIGH_CONFIDENCE.equalsIgnoreCase(aiResult.confidence()) && aiResult.documentType() != null)
-                ? aiResult.documentType()
-                : documentType;
+                ? normalizeDocumentType(aiResult.documentType())
+                : normalizeDocumentType(documentType);
 
         VehicleDocument document = VehicleDocument.builder()
                 .vehicle(vehicle)
@@ -80,7 +82,7 @@ public class VehicleDocumentService {
                     .orElseThrow(() -> ResourceNotFoundException.of("Vehicle", request.vehicleId()));
             document.setVehicle(vehicle);
         }
-        document.setDocumentType(request.documentType());
+        document.setDocumentType(normalizeDocumentType(request.documentType()));
         document.setDocumentNo(request.documentNo());
         document.setIssuedDate(request.issuedDate());
         document.setExpiryDate(request.expiryDate());
@@ -126,5 +128,25 @@ public class VehicleDocumentService {
             log.warn("Failed to serialize AI parse result: {}", e.getMessage());
             return null;
         }
+    }
+
+    private static final Set<String> VALID_TYPES = Set.of(
+            "insurance", "gate_pass", "puc", "fitness", "tax", "state_permit", "other");
+
+    private static final Map<String, String> TYPE_ALIASES = Map.of(
+            "puc_pollution", "puc",
+            "pollution", "puc",
+            "motor_insurance", "insurance",
+            "vehicle_insurance", "insurance",
+            "fitness_certificate", "fitness",
+            "permit", "state_permit",
+            "road_tax", "tax"
+    );
+
+    private String normalizeDocumentType(String raw) {
+        if (raw == null || raw.isBlank()) return "other";
+        String lower = raw.toLowerCase().trim();
+        if (VALID_TYPES.contains(lower)) return lower;
+        return TYPE_ALIASES.getOrDefault(lower, "other");
     }
 }
