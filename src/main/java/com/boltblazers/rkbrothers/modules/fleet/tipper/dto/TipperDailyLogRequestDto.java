@@ -46,6 +46,8 @@ public record TipperDailyLogRequestDto(
 
         String workDescription,
 
+        String receivingSlipUrl,
+
         List<@Valid TipperTripEntryDto> tripEntries,
 
         List<@Valid TipperHrEntryDto> hrEntries

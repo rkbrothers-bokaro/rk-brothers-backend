@@ -43,6 +43,8 @@ public record JcbDailyLogRequestDto(
 
         String workDescription,
 
+        String receivingSlipUrl,
+
         @NotEmpty(message = "At least one shift is required")
         List<@Valid JcbShiftDto> shifts
 ) {

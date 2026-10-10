@@ -79,6 +79,7 @@ public class TipperDailyLogService {
                 .runKm(request.runKm())
                 .avgKmPerLtr(avgKmPerLtr)
                 .workDescription(request.workDescription())
+                .receivingSlipUrl(request.receivingSlipUrl())
                 .submittedBy(userRepository.getReferenceById(currentUser.getId()))
                 .build();
 
@@ -136,6 +137,7 @@ public class TipperDailyLogService {
         log.setRunKm(request.runKm());
         log.setAvgKmPerLtr(avgKmPerLtr);
         log.setWorkDescription(request.workDescription());
+        log.setReceivingSlipUrl(request.receivingSlipUrl());
 
         log.getTripEntries().clear();
         List<TipperTripEntry> tripEntries = buildTripEntries(request.tripEntries(), log);

@@ -77,6 +77,7 @@ public class JcbDailyLogService {
                 .materialQty(request.materialQty())
                 .materialUnit(request.materialUnit())
                 .workDescription(request.workDescription())
+                .receivingSlipUrl(request.receivingSlipUrl())
                 .submittedBy(userRepository.getReferenceById(currentUser.getId()))
                 .build();
 
@@ -129,6 +130,7 @@ public class JcbDailyLogService {
         log.setMaterialQty(request.materialQty());
         log.setMaterialUnit(request.materialUnit());
         log.setWorkDescription(request.workDescription());
+        log.setReceivingSlipUrl(request.receivingSlipUrl());
 
         log.getShifts().clear();
         log.getShifts().addAll(buildShifts(request.shifts(), log));
