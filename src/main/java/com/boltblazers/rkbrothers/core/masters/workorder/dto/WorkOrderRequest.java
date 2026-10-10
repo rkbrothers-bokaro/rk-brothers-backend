@@ -13,7 +13,7 @@ public record WorkOrderRequest(
         @Size(max = 50, message = "Work order number must be at most 50 characters")
         String woNumber,
 
-        Long partyId,
+        String partyName,
 
         String description,
 

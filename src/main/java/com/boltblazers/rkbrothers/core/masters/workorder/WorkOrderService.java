@@ -57,7 +57,7 @@ public class WorkOrderService {
 
         WorkOrder workOrder = WorkOrder.builder()
                 .woNumber(request.woNumber())
-                .party(resolveParty(request.partyId()))
+                .party(resolveParty(request.partyName()))
                 .description(request.description())
                 .siteLocation(request.siteLocation())
                 .billingBasis(request.billingBasis())
@@ -79,7 +79,7 @@ public class WorkOrderService {
         }
 
         workOrder.setWoNumber(request.woNumber());
-        workOrder.setParty(resolveParty(request.partyId()));
+        workOrder.setParty(resolveParty(request.partyName()));
         workOrder.setDescription(request.description());
         workOrder.setSiteLocation(request.siteLocation());
         workOrder.setBillingBasis(request.billingBasis());
@@ -106,11 +106,17 @@ public class WorkOrderService {
         return workOrder;
     }
 
-    private Party resolveParty(Long partyId) {
-        if (partyId == null) {
+    private Party resolveParty(String partyName) {
+        if (partyName == null || partyName.isBlank()) {
             return null;
         }
-        return partyRepository.findById(partyId)
-                .orElseThrow(() -> ResourceNotFoundException.of("Party", partyId));
+        return partyRepository.findByNameIgnoreCase(partyName.trim())
+                .orElseGet(() -> {
+                    Party newParty = Party.builder()
+                            .name(partyName.trim())
+                            .isActive(true)
+                            .build();
+                    return partyRepository.save(newParty);
+                });
     }
 }
