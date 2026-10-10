@@ -61,6 +61,25 @@ public class DieselReceiptService {
         return receipts.stream().map(DieselReceiptResponseDto::from).toList();
     }
 
+    @Auditable(entityName = ENTITY_NAME, action = AuditAction.UPDATE)
+    public DieselReceiptResponseDto updateReceipt(Long id, DieselReceiptRequestDto request) {
+        DieselReceipt receipt = dieselReceiptRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.of(ENTITY_NAME, id));
+
+        Vehicle vehicle = vehicleRepository.findById(request.vehicleId())
+                .filter(Vehicle::isActive)
+                .orElseThrow(() -> ResourceNotFoundException.of("Vehicle", request.vehicleId()));
+
+        receipt.setDate(request.date());
+        receipt.setVehicle(vehicle);
+        receipt.setLitres(request.litres());
+        receipt.setReceivedFrom(request.receivedFrom());
+        receipt.setInvoiceNo(request.invoiceNo());
+        // Do not update createdAt or enteredBy
+
+        return DieselReceiptResponseDto.from(dieselReceiptRepository.save(receipt));
+    }
+
     @Auditable(entityName = ENTITY_NAME, action = AuditAction.DELETE)
     public void deleteReceipt(Long id) {
         DieselReceipt receipt = dieselReceiptRepository.findById(id)
