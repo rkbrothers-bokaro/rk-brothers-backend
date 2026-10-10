@@ -37,7 +37,7 @@ import java.util.Set;
 public class JcbDailyLogService {
 
     private static final String ENTITY_NAME = "JcbDailyLog";
-    private static final Set<String> ALLOWED_VEHICLE_TYPES = Set.of("jcb", "poclain");
+    private static final Set<String> ALLOWED_VEHICLE_TYPES = Set.of("jcb", "poclain", "jcb_backhoe", "poclain_excavator");
 
     private final JcbDailyLogRepository jcbDailyLogRepository;
     private final VehicleRepository vehicleRepository;

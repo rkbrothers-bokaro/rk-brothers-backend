@@ -37,7 +37,7 @@ import java.util.Set;
 public class TipperDailyLogService {
 
     private static final String ENTITY_NAME = "TipperDailyLog";
-    private static final Set<String> ALLOWED_VEHICLE_TYPES = Set.of("tipper", "hyva");
+    private static final Set<String> ALLOWED_VEHICLE_TYPES = Set.of("tipper", "hyva", "tipper_hyva");
 
     private final TipperDailyLogRepository tipperDailyLogRepository;
     private final VehicleRepository vehicleRepository;
