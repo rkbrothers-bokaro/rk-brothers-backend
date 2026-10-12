@@ -40,6 +40,7 @@ public interface JcbDailyLogRepository extends JpaRepository<JcbDailyLog, Long> 
             AND (CAST(:startDate AS LocalDate) IS NULL OR j.date >= :startDate)
             AND (CAST(:endDate AS LocalDate) IS NULL OR j.date <= :endDate)
             AND (CAST(:submittedById AS Long) IS NULL OR j.submittedBy.id = :submittedById)
+            ORDER BY j.date DESC, j.id DESC
             """)
     Page<JcbDailyLog> findAllWithFilters(@Param("vehicleId") Long vehicleId,
                                           @Param("workOrderId") Long workOrderId,

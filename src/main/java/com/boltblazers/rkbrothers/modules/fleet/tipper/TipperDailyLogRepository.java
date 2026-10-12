@@ -40,6 +40,7 @@ public interface TipperDailyLogRepository extends JpaRepository<TipperDailyLog, 
             AND (CAST(:startDate AS LocalDate) IS NULL OR t.date >= :startDate)
             AND (CAST(:endDate AS LocalDate) IS NULL OR t.date <= :endDate)
             AND (CAST(:submittedById AS Long) IS NULL OR t.submittedBy.id = :submittedById)
+            ORDER BY t.date DESC, t.id DESC
             """)
     Page<TipperDailyLog> findAllWithFilters(@Param("vehicleId") Long vehicleId,
                                              @Param("workOrderId") Long workOrderId,
