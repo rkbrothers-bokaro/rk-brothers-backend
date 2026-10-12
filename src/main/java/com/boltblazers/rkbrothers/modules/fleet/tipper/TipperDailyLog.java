@@ -91,6 +91,10 @@ public class TipperDailyLog extends BaseEntity {
     @Column(name = "receiving_slip_url", length = 500)
     private String receivingSlipUrl;
 
+    @Column(name = "no_work_done")
+    @Builder.Default
+    private Boolean noWorkDone = false;
+
     @Column(nullable = false, length = 20)
     @Builder.Default
     private String status = "submitted";

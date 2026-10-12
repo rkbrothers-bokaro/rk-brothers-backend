@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -22,13 +22,11 @@ public record JcbDailyLogRequestDto(
 
         Long operatorId,
 
-        @NotNull(message = "Opening hours is required")
         BigDecimal openingHrs,
 
-        @NotNull(message = "Closing hours is required")
         BigDecimal closingHrs,
 
-        @Positive(message = "Diesel litres must be positive")
+        @PositiveOrZero(message = "Diesel litres must be positive or zero")
         BigDecimal dieselLtr,
 
         BigDecimal dieselMtr,
@@ -45,7 +43,8 @@ public record JcbDailyLogRequestDto(
 
         String receivingSlipUrl,
 
-        @NotEmpty(message = "At least one shift is required")
+        Boolean noWorkDone,
+
         List<@Valid JcbShiftDto> shifts
 ) {
 }

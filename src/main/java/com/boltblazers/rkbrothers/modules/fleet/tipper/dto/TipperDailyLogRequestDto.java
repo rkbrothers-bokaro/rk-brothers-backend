@@ -3,7 +3,7 @@ package com.boltblazers.rkbrothers.modules.fleet.tipper.dto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -21,19 +21,15 @@ public record TipperDailyLogRequestDto(
 
         Long driverId,
 
-        @NotNull(message = "Opening hours is required")
         BigDecimal openingHrs,
 
-        @NotNull(message = "Closing hours is required")
         BigDecimal closingHrs,
 
-        @NotNull(message = "Opening km is required")
         BigDecimal openingKm,
 
-        @NotNull(message = "Closing km is required")
         BigDecimal closingKm,
 
-        @Positive(message = "Diesel litres must be positive")
+        @PositiveOrZero(message = "Diesel litres must be positive or zero")
         BigDecimal dieselLtr,
 
         BigDecimal dieselHrs,
@@ -47,6 +43,8 @@ public record TipperDailyLogRequestDto(
         String workDescription,
 
         String receivingSlipUrl,
+
+        Boolean noWorkDone,
 
         List<@Valid TipperTripEntryDto> tripEntries,
 

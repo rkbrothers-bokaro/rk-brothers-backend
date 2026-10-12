@@ -47,7 +47,7 @@ public class TipperDailyLogService {
 
     @Transactional(readOnly = true)
     public BigDecimal getOpeningHrsForToday(Long vehicleId, LocalDate date) {
-        return tipperDailyLogRepository.findByVehicleIdAndDate(vehicleId, date.minusDays(1))
+        return tipperDailyLogRepository.findFirstByVehicleIdAndDateLessThanAndClosingHrsIsNotNullOrderByDateDesc(vehicleId, date)
                 .map(TipperDailyLog::getClosingHrs)
                 .orElse(null);
     }
@@ -58,35 +58,41 @@ public class TipperDailyLogService {
         WorkOrder workOrder = resolveWorkOrder(request.workOrderId());
         Operator driver = resolveDriver(request.driverId());
 
-        BigDecimal totalHrs = computeDelta(request.openingHrs(), request.closingHrs());
-        BigDecimal totalKm = computeDelta(request.openingKm(), request.closingKm());
-        BigDecimal avgKmPerLtr = computeAvgKmPerLtr(totalKm, request.dieselLtr());
+        boolean isNoWork = Boolean.TRUE.equals(request.noWorkDone());
+        BigDecimal totalHrs = isNoWork ? BigDecimal.ZERO : computeDelta(request.openingHrs(), request.closingHrs());
+        BigDecimal totalKm = isNoWork ? BigDecimal.ZERO : computeDelta(request.openingKm(), request.closingKm());
+        BigDecimal avgKmPerLtr = isNoWork ? null : computeAvgKmPerLtr(totalKm, request.dieselLtr());
 
         TipperDailyLog log = TipperDailyLog.builder()
                 .date(request.date())
                 .vehicle(vehicle)
                 .workOrder(workOrder)
                 .driver(driver)
-                .openingHrs(request.openingHrs())
-                .closingHrs(request.closingHrs())
+                .openingHrs(isNoWork ? null : request.openingHrs())
+                .closingHrs(isNoWork ? null : request.closingHrs())
                 .totalHrs(totalHrs)
-                .openingKm(request.openingKm())
-                .closingKm(request.closingKm())
+                .openingKm(isNoWork ? null : request.openingKm())
+                .closingKm(isNoWork ? null : request.closingKm())
                 .totalKm(totalKm)
-                .dieselLtr(request.dieselLtr())
-                .dieselHrs(request.dieselHrs())
-                .dieselKm(request.dieselKm())
-                .runKm(request.runKm())
+                .dieselLtr(isNoWork ? null : request.dieselLtr())
+                .dieselHrs(isNoWork ? null : request.dieselHrs())
+                .dieselKm(isNoWork ? null : request.dieselKm())
+                .runKm(isNoWork ? null : request.runKm())
                 .avgKmPerLtr(avgKmPerLtr)
                 .workDescription(request.workDescription())
-                .receivingSlipUrl(request.receivingSlipUrl())
+                .receivingSlipUrl(isNoWork ? null : request.receivingSlipUrl())
+                .noWorkDone(isNoWork)
                 .submittedBy(userRepository.getReferenceById(currentUser.getId()))
                 .build();
 
-        List<TipperTripEntry> tripEntries = buildTripEntries(request.tripEntries(), log);
-        log.getTripEntries().addAll(tripEntries);
-        log.getHrEntries().addAll(buildHrEntries(request.hrEntries(), log));
-        log.setTripCount(resolveTripCount(request.tripCount(), tripEntries));
+        if (!isNoWork) {
+            List<TipperTripEntry> tripEntries = buildTripEntries(request.tripEntries(), log);
+            log.getTripEntries().addAll(tripEntries);
+            log.getHrEntries().addAll(buildHrEntries(request.hrEntries(), log));
+            log.setTripCount(resolveTripCount(request.tripCount(), tripEntries));
+        } else {
+            log.setTripCount(0);
+        }
 
         return TipperDailyLogResponseDto.from(tipperDailyLogRepository.save(log));
     }
@@ -117,36 +123,40 @@ public class TipperDailyLogService {
         WorkOrder workOrder = resolveWorkOrder(request.workOrderId());
         Operator driver = resolveDriver(request.driverId());
 
-        BigDecimal totalHrs = computeDelta(request.openingHrs(), request.closingHrs());
-        BigDecimal totalKm = computeDelta(request.openingKm(), request.closingKm());
-        BigDecimal avgKmPerLtr = computeAvgKmPerLtr(totalKm, request.dieselLtr());
+        boolean isNoWork = Boolean.TRUE.equals(request.noWorkDone());
+        BigDecimal totalHrs = isNoWork ? BigDecimal.ZERO : computeDelta(request.openingHrs(), request.closingHrs());
+        BigDecimal totalKm = isNoWork ? BigDecimal.ZERO : computeDelta(request.openingKm(), request.closingKm());
+        BigDecimal avgKmPerLtr = isNoWork ? null : computeAvgKmPerLtr(totalKm, request.dieselLtr());
 
         log.setDate(request.date());
         log.setVehicle(vehicle);
         log.setWorkOrder(workOrder);
         log.setDriver(driver);
-        log.setOpeningHrs(request.openingHrs());
-        log.setClosingHrs(request.closingHrs());
+        log.setOpeningHrs(isNoWork ? null : request.openingHrs());
+        log.setClosingHrs(isNoWork ? null : request.closingHrs());
         log.setTotalHrs(totalHrs);
-        log.setOpeningKm(request.openingKm());
-        log.setClosingKm(request.closingKm());
+        log.setOpeningKm(isNoWork ? null : request.openingKm());
+        log.setClosingKm(isNoWork ? null : request.closingKm());
         log.setTotalKm(totalKm);
-        log.setDieselLtr(request.dieselLtr());
-        log.setDieselHrs(request.dieselHrs());
-        log.setDieselKm(request.dieselKm());
-        log.setRunKm(request.runKm());
+        log.setDieselLtr(isNoWork ? null : request.dieselLtr());
+        log.setDieselHrs(isNoWork ? null : request.dieselHrs());
+        log.setDieselKm(isNoWork ? null : request.dieselKm());
+        log.setRunKm(isNoWork ? null : request.runKm());
         log.setAvgKmPerLtr(avgKmPerLtr);
         log.setWorkDescription(request.workDescription());
-        log.setReceivingSlipUrl(request.receivingSlipUrl());
+        log.setReceivingSlipUrl(isNoWork ? null : request.receivingSlipUrl());
+        log.setNoWorkDone(isNoWork);
 
         log.getTripEntries().clear();
-        List<TipperTripEntry> tripEntries = buildTripEntries(request.tripEntries(), log);
-        log.getTripEntries().addAll(tripEntries);
-
         log.getHrEntries().clear();
-        log.getHrEntries().addAll(buildHrEntries(request.hrEntries(), log));
-
-        log.setTripCount(resolveTripCount(request.tripCount(), tripEntries));
+        if (!isNoWork) {
+            List<TipperTripEntry> tripEntries = buildTripEntries(request.tripEntries(), log);
+            log.getTripEntries().addAll(tripEntries);
+            log.getHrEntries().addAll(buildHrEntries(request.hrEntries(), log));
+            log.setTripCount(resolveTripCount(request.tripCount(), tripEntries));
+        } else {
+            log.setTripCount(0);
+        }
 
         return TipperDailyLogResponseDto.from(tipperDailyLogRepository.save(log));
     }
@@ -206,6 +216,9 @@ public class TipperDailyLogService {
     }
 
     private BigDecimal computeDelta(BigDecimal opening, BigDecimal closing) {
+        if (opening == null || closing == null) {
+            return BigDecimal.ZERO;
+        }
         if (closing.compareTo(opening) < 0) {
             throw new BadRequestException("Validation failed");
         }
@@ -225,6 +238,7 @@ public class TipperDailyLogService {
             return entries;
         }
         for (TipperTripEntryDto dto : dtos) {
+            if (dto == null) continue;
             entries.add(TipperTripEntry.builder()
                     .log(log)
                     .fromLocation(dto.fromLocation())
@@ -241,6 +255,9 @@ public class TipperDailyLogService {
             return entries;
         }
         for (TipperHrEntryDto dto : dtos) {
+            if (dto == null || dto.openingHrs() == null || dto.closingHrs() == null) {
+                continue;
+            }
             BigDecimal entryTotalHrs = computeDelta(dto.openingHrs(), dto.closingHrs());
             entries.add(TipperHrEntry.builder()
                     .log(log)

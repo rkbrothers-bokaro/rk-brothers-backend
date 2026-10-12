@@ -33,6 +33,7 @@ public record JcbDailyLogResponseDto(
         String status,
         Long submittedById,
         String submittedByName,
+        Boolean noWorkDone,
         List<JcbShiftDto> shifts
 ) {
     public static JcbDailyLogResponseDto from(JcbDailyLog log) {
@@ -62,6 +63,7 @@ public record JcbDailyLogResponseDto(
                 log.getStatus(),
                 log.getSubmittedBy() != null ? log.getSubmittedBy().getId() : null,
                 log.getSubmittedBy() != null ? log.getSubmittedBy().getFullName() : null,
+                log.getNoWorkDone(),
                 log.getShifts().stream().map(JcbDailyLogResponseDto::shiftToDto).toList()
         );
     }

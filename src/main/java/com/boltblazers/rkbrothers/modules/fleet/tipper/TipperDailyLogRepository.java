@@ -15,6 +15,8 @@ public interface TipperDailyLogRepository extends JpaRepository<TipperDailyLog, 
 
     Optional<TipperDailyLog> findByVehicleIdAndDate(Long vehicleId, LocalDate date);
 
+    Optional<TipperDailyLog> findFirstByVehicleIdAndDateLessThanAndClosingHrsIsNotNullOrderByDateDesc(Long vehicleId, LocalDate date);
+
     Page<TipperDailyLog> findBySubmittedById(Long userId, Pageable pageable);
 
     List<TipperDailyLog> findByVehicleIdAndDateBetween(Long vehicleId, LocalDate startDate, LocalDate endDate);

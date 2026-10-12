@@ -47,7 +47,7 @@ public class JcbDailyLogService {
 
     @Transactional(readOnly = true)
     public BigDecimal getOpeningHrsForToday(Long vehicleId, LocalDate date) {
-        return jcbDailyLogRepository.findByVehicleIdAndDate(vehicleId, date.minusDays(1))
+        return jcbDailyLogRepository.findFirstByVehicleIdAndDateLessThanAndClosingHrsIsNotNullOrderByDateDesc(vehicleId, date)
                 .map(JcbDailyLog::getClosingHrs)
                 .orElse(null);
     }
@@ -58,30 +58,34 @@ public class JcbDailyLogService {
         WorkOrder workOrder = resolveWorkOrder(request.workOrderId());
         Operator operator = resolveOperator(request.operatorId());
 
-        BigDecimal totalHrs = computeTotalHrs(request.openingHrs(), request.closingHrs());
-        BigDecimal avgLtrPerHr = computeAvgLtrPerHr(request.dieselLtr(), totalHrs);
+        boolean isNoWork = Boolean.TRUE.equals(request.noWorkDone());
+        BigDecimal totalHrs = isNoWork ? BigDecimal.ZERO : computeTotalHrs(request.openingHrs(), request.closingHrs());
+        BigDecimal avgLtrPerHr = isNoWork ? null : computeAvgLtrPerHr(request.dieselLtr(), totalHrs);
 
         JcbDailyLog log = JcbDailyLog.builder()
                 .date(request.date())
                 .vehicle(vehicle)
                 .workOrder(workOrder)
                 .operator(operator)
-                .openingHrs(request.openingHrs())
-                .closingHrs(request.closingHrs())
+                .openingHrs(isNoWork ? null : request.openingHrs())
+                .closingHrs(isNoWork ? null : request.closingHrs())
                 .totalHrs(totalHrs)
-                .dieselLtr(request.dieselLtr())
-                .dieselMtr(request.dieselMtr())
-                .runningLtr(request.runningLtr())
+                .dieselLtr(isNoWork ? null : request.dieselLtr())
+                .dieselMtr(isNoWork ? null : request.dieselMtr())
+                .runningLtr(isNoWork ? null : request.runningLtr())
                 .avgLtrPerHr(avgLtrPerHr)
-                .materialType(request.materialType())
-                .materialQty(request.materialQty())
-                .materialUnit(request.materialUnit())
+                .materialType(isNoWork ? null : request.materialType())
+                .materialQty(isNoWork ? null : request.materialQty())
+                .materialUnit(isNoWork ? null : request.materialUnit())
                 .workDescription(request.workDescription())
-                .receivingSlipUrl(request.receivingSlipUrl())
+                .receivingSlipUrl(isNoWork ? null : request.receivingSlipUrl())
+                .noWorkDone(isNoWork)
                 .submittedBy(userRepository.getReferenceById(currentUser.getId()))
                 .build();
 
-        log.getShifts().addAll(buildShifts(request.shifts(), log));
+        if (!isNoWork) {
+            log.getShifts().addAll(buildShifts(request.shifts(), log));
+        }
 
         return JcbDailyLogResponseDto.from(jcbDailyLogRepository.save(log));
     }
@@ -112,28 +116,32 @@ public class JcbDailyLogService {
         WorkOrder workOrder = resolveWorkOrder(request.workOrderId());
         Operator operator = resolveOperator(request.operatorId());
 
-        BigDecimal totalHrs = computeTotalHrs(request.openingHrs(), request.closingHrs());
-        BigDecimal avgLtrPerHr = computeAvgLtrPerHr(request.dieselLtr(), totalHrs);
+        boolean isNoWork = Boolean.TRUE.equals(request.noWorkDone());
+        BigDecimal totalHrs = isNoWork ? BigDecimal.ZERO : computeTotalHrs(request.openingHrs(), request.closingHrs());
+        BigDecimal avgLtrPerHr = isNoWork ? null : computeAvgLtrPerHr(request.dieselLtr(), totalHrs);
 
         log.setDate(request.date());
         log.setVehicle(vehicle);
         log.setWorkOrder(workOrder);
         log.setOperator(operator);
-        log.setOpeningHrs(request.openingHrs());
-        log.setClosingHrs(request.closingHrs());
+        log.setOpeningHrs(isNoWork ? null : request.openingHrs());
+        log.setClosingHrs(isNoWork ? null : request.closingHrs());
         log.setTotalHrs(totalHrs);
-        log.setDieselLtr(request.dieselLtr());
-        log.setDieselMtr(request.dieselMtr());
-        log.setRunningLtr(request.runningLtr());
+        log.setDieselLtr(isNoWork ? null : request.dieselLtr());
+        log.setDieselMtr(isNoWork ? null : request.dieselMtr());
+        log.setRunningLtr(isNoWork ? null : request.runningLtr());
         log.setAvgLtrPerHr(avgLtrPerHr);
-        log.setMaterialType(request.materialType());
-        log.setMaterialQty(request.materialQty());
-        log.setMaterialUnit(request.materialUnit());
+        log.setMaterialType(isNoWork ? null : request.materialType());
+        log.setMaterialQty(isNoWork ? null : request.materialQty());
+        log.setMaterialUnit(isNoWork ? null : request.materialUnit());
         log.setWorkDescription(request.workDescription());
-        log.setReceivingSlipUrl(request.receivingSlipUrl());
+        log.setReceivingSlipUrl(isNoWork ? null : request.receivingSlipUrl());
+        log.setNoWorkDone(isNoWork);
 
         log.getShifts().clear();
-        log.getShifts().addAll(buildShifts(request.shifts(), log));
+        if (!isNoWork) {
+            log.getShifts().addAll(buildShifts(request.shifts(), log));
+        }
 
         return JcbDailyLogResponseDto.from(jcbDailyLogRepository.save(log));
     }
@@ -193,6 +201,9 @@ public class JcbDailyLogService {
     }
 
     private BigDecimal computeTotalHrs(BigDecimal openingHrs, BigDecimal closingHrs) {
+        if (openingHrs == null || closingHrs == null) {
+            return BigDecimal.ZERO;
+        }
         if (closingHrs.compareTo(openingHrs) < 0) {
             throw new BadRequestException("Validation failed");
         }
@@ -208,7 +219,13 @@ public class JcbDailyLogService {
 
     private List<JcbDailyLogShift> buildShifts(List<JcbShiftDto> shiftDtos, JcbDailyLog log) {
         List<JcbDailyLogShift> shifts = new ArrayList<>();
+        if (shiftDtos == null) {
+            return shifts;
+        }
         for (JcbShiftDto dto : shiftDtos) {
+            if (dto == null || dto.startTime() == null || dto.closeTime() == null) {
+                continue;
+            }
             if (!dto.closeTime().isAfter(dto.startTime())) {
                 throw new BadRequestException("Validation failed");
             }

@@ -15,6 +15,8 @@ public interface JcbDailyLogRepository extends JpaRepository<JcbDailyLog, Long> 
 
     Optional<JcbDailyLog> findByVehicleIdAndDate(Long vehicleId, LocalDate date);
 
+    Optional<JcbDailyLog> findFirstByVehicleIdAndDateLessThanAndClosingHrsIsNotNullOrderByDateDesc(Long vehicleId, LocalDate date);
+
     Page<JcbDailyLog> findBySubmittedById(Long userId, Pageable pageable);
 
     List<JcbDailyLog> findByVehicleIdAndDateBetween(Long vehicleId, LocalDate startDate, LocalDate endDate);
