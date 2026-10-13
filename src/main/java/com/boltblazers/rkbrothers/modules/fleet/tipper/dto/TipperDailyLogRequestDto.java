@@ -48,6 +48,8 @@ public record TipperDailyLogRequestDto(
 
         List<@Valid TipperTripEntryDto> tripEntries,
 
-        List<@Valid TipperHrEntryDto> hrEntries
+        List<@Valid TipperHrEntryDto> hrEntries,
+
+        String partyName
 ) {
 }

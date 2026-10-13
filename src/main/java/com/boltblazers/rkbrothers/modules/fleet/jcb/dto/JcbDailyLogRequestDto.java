@@ -45,6 +45,8 @@ public record JcbDailyLogRequestDto(
 
         Boolean noWorkDone,
 
-        List<@Valid JcbShiftDto> shifts
+        List<@Valid JcbShiftDto> shifts,
+
+        String partyName
 ) {
 }

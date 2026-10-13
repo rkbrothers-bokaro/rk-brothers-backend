@@ -1,0 +1,2 @@
+ALTER TABLE jcb_daily_log ADD COLUMN IF NOT EXISTS party_name VARCHAR(150);
+ALTER TABLE tipper_daily_log ADD COLUMN IF NOT EXISTS party_name VARCHAR(150);

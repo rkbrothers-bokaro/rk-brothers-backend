@@ -36,7 +36,8 @@ public record TipperDailyLogResponseDto(
         String submittedByName,
         Boolean noWorkDone,
         List<TipperTripEntryDto> tripEntries,
-        List<TipperHrEntryDto> hrEntries
+        List<TipperHrEntryDto> hrEntries,
+        String partyName
 ) {
     public static TipperDailyLogResponseDto from(TipperDailyLog log) {
         return new TipperDailyLogResponseDto(
@@ -67,7 +68,8 @@ public record TipperDailyLogResponseDto(
                 log.getSubmittedBy() != null ? log.getSubmittedBy().getFullName() : null,
                 log.getNoWorkDone(),
                 log.getTripEntries().stream().map(TipperDailyLogResponseDto::tripToDto).toList(),
-                log.getHrEntries().stream().map(TipperDailyLogResponseDto::hrToDto).toList()
+                log.getHrEntries().stream().map(TipperDailyLogResponseDto::hrToDto).toList(),
+                log.getPartyName()
         );
     }
 

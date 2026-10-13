@@ -37,7 +37,6 @@ import java.util.Set;
 public class JcbDailyLogService {
 
     private static final String ENTITY_NAME = "JcbDailyLog";
-    private static final Set<String> ALLOWED_VEHICLE_TYPES = Set.of("jcb", "poclain", "jcb_backhoe", "poclain_excavator");
 
     private final JcbDailyLogRepository jcbDailyLogRepository;
     private final VehicleRepository vehicleRepository;
@@ -77,6 +76,7 @@ public class JcbDailyLogService {
                 .materialType(isNoWork ? null : request.materialType())
                 .materialQty(isNoWork ? null : request.materialQty())
                 .materialUnit(isNoWork ? null : request.materialUnit())
+                .partyName(request.partyName())
                 .workDescription(request.workDescription())
                 .receivingSlipUrl(isNoWork ? null : request.receivingSlipUrl())
                 .noWorkDone(isNoWork)
@@ -134,6 +134,7 @@ public class JcbDailyLogService {
         log.setMaterialType(isNoWork ? null : request.materialType());
         log.setMaterialQty(isNoWork ? null : request.materialQty());
         log.setMaterialUnit(isNoWork ? null : request.materialUnit());
+        log.setPartyName(request.partyName());
         log.setWorkDescription(request.workDescription());
         log.setReceivingSlipUrl(isNoWork ? null : request.receivingSlipUrl());
         log.setNoWorkDone(isNoWork);
@@ -172,14 +173,9 @@ public class JcbDailyLogService {
     }
 
     private Vehicle resolveVehicle(Long vehicleId) {
-        Vehicle vehicle = vehicleRepository.findById(vehicleId)
+        return vehicleRepository.findById(vehicleId)
                 .filter(Vehicle::isActive)
                 .orElseThrow(() -> ResourceNotFoundException.of("Vehicle", vehicleId));
-
-        if (vehicle.getType() == null || !ALLOWED_VEHICLE_TYPES.contains(vehicle.getType().toLowerCase())) {
-            throw new BadRequestException("Vehicle type mismatch");
-        }
-        return vehicle;
     }
 
     private WorkOrder resolveWorkOrder(Long workOrderId) {

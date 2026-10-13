@@ -34,7 +34,8 @@ public record JcbDailyLogResponseDto(
         Long submittedById,
         String submittedByName,
         Boolean noWorkDone,
-        List<JcbShiftDto> shifts
+        List<JcbShiftDto> shifts,
+        String partyName
 ) {
     public static JcbDailyLogResponseDto from(JcbDailyLog log) {
         return new JcbDailyLogResponseDto(
@@ -64,7 +65,8 @@ public record JcbDailyLogResponseDto(
                 log.getSubmittedBy() != null ? log.getSubmittedBy().getId() : null,
                 log.getSubmittedBy() != null ? log.getSubmittedBy().getFullName() : null,
                 log.getNoWorkDone(),
-                log.getShifts().stream().map(JcbDailyLogResponseDto::shiftToDto).toList()
+                log.getShifts().stream().map(JcbDailyLogResponseDto::shiftToDto).toList(),
+                log.getPartyName()
         );
     }
 

@@ -84,6 +84,9 @@ public class JcbDailyLog extends BaseEntity {
     @Column(name = "receiving_slip_url", length = 500)
     private String receivingSlipUrl;
 
+    @Column(name = "party_name", length = 150)
+    private String partyName;
+
     @Column(name = "no_work_done")
     @Builder.Default
     private Boolean noWorkDone = false;
