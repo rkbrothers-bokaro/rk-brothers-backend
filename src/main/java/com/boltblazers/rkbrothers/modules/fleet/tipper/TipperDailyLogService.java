@@ -57,7 +57,11 @@ public class TipperDailyLogService {
         WorkOrder workOrder = resolveWorkOrder(request.workOrderId());
         Operator driver = resolveDriver(request.driverId());
 
-        boolean isNoWork = Boolean.TRUE.equals(request.noWorkDone());
+        boolean isAbsent = Boolean.TRUE.equals(request.driverAbsent());
+        boolean isNoWork = isAbsent || Boolean.TRUE.equals(request.noWorkDone());
+        String description = isAbsent
+                ? (request.workDescription() != null && !request.workDescription().isBlank() ? request.workDescription() : "Driver Absent")
+                : request.workDescription();
         BigDecimal totalHrs = isNoWork ? BigDecimal.ZERO : computeDelta(request.openingHrs(), request.closingHrs());
         BigDecimal totalKm = isNoWork ? BigDecimal.ZERO : computeDelta(request.openingKm(), request.closingKm());
         BigDecimal avgKmPerLtr = isNoWork ? null : computeAvgKmPerLtr(totalKm, request.dieselLtr());
@@ -79,9 +83,10 @@ public class TipperDailyLogService {
                 .runKm(isNoWork ? null : request.runKm())
                 .avgKmPerLtr(avgKmPerLtr)
                 .partyName(request.partyName())
-                .workDescription(request.workDescription())
+                .workDescription(description)
                 .receivingSlipUrl(isNoWork ? null : request.receivingSlipUrl())
                 .noWorkDone(isNoWork)
+                .driverAbsent(isAbsent)
                 .submittedBy(userRepository.getReferenceById(currentUser.getId()))
                 .build();
 
@@ -123,7 +128,11 @@ public class TipperDailyLogService {
         WorkOrder workOrder = resolveWorkOrder(request.workOrderId());
         Operator driver = resolveDriver(request.driverId());
 
-        boolean isNoWork = Boolean.TRUE.equals(request.noWorkDone());
+        boolean isAbsent = Boolean.TRUE.equals(request.driverAbsent());
+        boolean isNoWork = isAbsent || Boolean.TRUE.equals(request.noWorkDone());
+        String updateDesc = isAbsent
+                ? (request.workDescription() != null && !request.workDescription().isBlank() ? request.workDescription() : "Driver Absent")
+                : request.workDescription();
         BigDecimal totalHrs = isNoWork ? BigDecimal.ZERO : computeDelta(request.openingHrs(), request.closingHrs());
         BigDecimal totalKm = isNoWork ? BigDecimal.ZERO : computeDelta(request.openingKm(), request.closingKm());
         BigDecimal avgKmPerLtr = isNoWork ? null : computeAvgKmPerLtr(totalKm, request.dieselLtr());
@@ -144,9 +153,10 @@ public class TipperDailyLogService {
         log.setRunKm(isNoWork ? null : request.runKm());
         log.setAvgKmPerLtr(avgKmPerLtr);
         log.setPartyName(request.partyName());
-        log.setWorkDescription(request.workDescription());
+        log.setWorkDescription(updateDesc);
         log.setReceivingSlipUrl(isNoWork ? null : request.receivingSlipUrl());
         log.setNoWorkDone(isNoWork);
+        log.setDriverAbsent(isAbsent);
 
         log.getTripEntries().clear();
         log.getHrEntries().clear();

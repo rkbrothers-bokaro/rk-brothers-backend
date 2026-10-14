@@ -30,8 +30,11 @@ public class BillingController {
     @GetMapping
     public ApiResponse<BillSummaryDto> getBill(@RequestParam Long workOrderId,
                                                 @RequestParam int month,
-                                                @RequestParam int year) {
-        return ApiResponse.success(billingService.generateBill(workOrderId, month, year));
+                                                @RequestParam int year,
+                                                @RequestParam(required = false) Long vehicleId,
+                                                @RequestParam(required = false) String partyName,
+                                                @RequestParam(required = false) String siteLocation) {
+        return ApiResponse.success(billingService.generateBill(workOrderId, month, year, vehicleId, partyName, siteLocation));
     }
 
     @GetMapping("/periods")
@@ -42,8 +45,11 @@ public class BillingController {
     @GetMapping("/pdf")
     public ResponseEntity<byte[]> getBillPdf(@RequestParam Long workOrderId,
                                               @RequestParam int month,
-                                              @RequestParam int year) {
-        BillSummaryDto bill = billingService.generateBill(workOrderId, month, year);
+                                              @RequestParam int year,
+                                              @RequestParam(required = false) Long vehicleId,
+                                              @RequestParam(required = false) String partyName,
+                                              @RequestParam(required = false) String siteLocation) {
+        BillSummaryDto bill = billingService.generateBill(workOrderId, month, year, vehicleId, partyName, siteLocation);
         byte[] pdf = billPdfService.generatePdf(bill);
 
         String monthName = Month.of(month).getDisplayName(TextStyle.FULL, Locale.ENGLISH);

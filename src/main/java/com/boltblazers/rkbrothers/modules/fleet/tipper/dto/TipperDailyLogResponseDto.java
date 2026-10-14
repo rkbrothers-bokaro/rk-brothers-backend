@@ -37,7 +37,8 @@ public record TipperDailyLogResponseDto(
         Boolean noWorkDone,
         List<TipperTripEntryDto> tripEntries,
         List<TipperHrEntryDto> hrEntries,
-        String partyName
+        String partyName,
+        Boolean driverAbsent
 ) {
     public static TipperDailyLogResponseDto from(TipperDailyLog log) {
         return new TipperDailyLogResponseDto(
@@ -69,7 +70,8 @@ public record TipperDailyLogResponseDto(
                 log.getNoWorkDone(),
                 log.getTripEntries().stream().map(TipperDailyLogResponseDto::tripToDto).toList(),
                 log.getHrEntries().stream().map(TipperDailyLogResponseDto::hrToDto).toList(),
-                log.getPartyName()
+                log.getPartyName(),
+                log.getDriverAbsent()
         );
     }
 

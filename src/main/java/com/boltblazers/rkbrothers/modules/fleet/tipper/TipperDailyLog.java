@@ -98,6 +98,10 @@ public class TipperDailyLog extends BaseEntity {
     @Builder.Default
     private Boolean noWorkDone = false;
 
+    @Column(name = "driver_absent")
+    @Builder.Default
+    private Boolean driverAbsent = false;
+
     @Column(nullable = false, length = 20)
     @Builder.Default
     private String status = "submitted";

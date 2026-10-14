@@ -43,6 +43,10 @@ public class BillingService {
     private final TipperDailyLogRepository tipperDailyLogRepository;
 
     public BillSummaryDto generateBill(Long workOrderId, int month, int year) {
+        return generateBill(workOrderId, month, year, null, null, null);
+    }
+
+    public BillSummaryDto generateBill(Long workOrderId, int month, int year, Long vehicleId, String customPartyName, String customSiteLocation) {
         WorkOrder workOrder = workOrderRepository.findById(workOrderId)
                 .filter(WorkOrder::isActive)
                 .orElseThrow(() -> ResourceNotFoundException.of("WorkOrder", workOrderId));
@@ -56,10 +60,10 @@ public class BillingService {
         LocalDate endDate = yearMonth.atEndOfMonth();
 
         List<BillLineItemDto> lineItems = switch (billingBasis) {
-            case "hour" -> buildHourLineItems(workOrder, party, rate, startDate, endDate);
-            case "trip" -> buildTripLineItems(workOrder, party, rate, startDate, endDate, "trip", workOrder.getUnit());
-            case "km" -> buildKmLineItems(workOrder, party, rate, startDate, endDate);
-            case "railline" -> buildTripLineItems(workOrder, party, rate, startDate, endDate, "railline", RAILLINE_UNIT);
+            case "hour" -> buildHourLineItems(workOrder, party, rate, startDate, endDate, vehicleId);
+            case "trip" -> buildTripLineItems(workOrder, party, rate, startDate, endDate, "trip", workOrder.getUnit(), vehicleId);
+            case "km" -> buildKmLineItems(workOrder, party, rate, startDate, endDate, vehicleId);
+            case "railline" -> buildTripLineItems(workOrder, party, rate, startDate, endDate, "railline", RAILLINE_UNIT, vehicleId);
             default -> throw new BadRequestException("Unsupported billing basis: " + workOrder.getBillingBasis());
         };
 
@@ -67,12 +71,20 @@ public class BillingService {
                 .map(BillLineItemDto::amount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        String effectivePartyName = (customPartyName != null && !customPartyName.isBlank())
+                ? customPartyName.trim()
+                : (party != null ? party.getName() : null);
+
+        String effectiveSiteLocation = (customSiteLocation != null && !customSiteLocation.isBlank())
+                ? customSiteLocation.trim()
+                : workOrder.getSiteLocation();
+
         return new BillSummaryDto(
                 workOrder.getId(),
                 workOrder.getWoNumber(),
                 party != null ? party.getId() : null,
-                party != null ? party.getName() : null,
-                workOrder.getSiteLocation(),
+                effectivePartyName,
+                effectiveSiteLocation,
                 month,
                 year,
                 lineItems,
@@ -98,7 +110,17 @@ public class BillingService {
         List<BillablePeriodDto> periods = new ArrayList<>();
         for (PeriodKey key : combos) {
             workOrderRepository.findById(key.workOrderId())
-                    .ifPresent(wo -> periods.add(new BillablePeriodDto(wo.getId(), wo.getWoNumber(), key.month(), key.year())));
+                    .ifPresent(wo -> periods.add(new BillablePeriodDto(
+                            wo.getId(),
+                            wo.getWoNumber(),
+                            wo.getParty() != null ? wo.getParty().getName() : null,
+                            wo.getSiteLocation(),
+                            wo.getBillingBasis(),
+                            wo.getRate(),
+                            wo.getUnit(),
+                            key.month(),
+                            key.year()
+                    )));
         }
 
         return periods.stream()
@@ -109,8 +131,11 @@ public class BillingService {
     }
 
     private List<BillLineItemDto> buildHourLineItems(WorkOrder workOrder, Party party, BigDecimal rate,
-                                                      LocalDate startDate, LocalDate endDate) {
+                                                      LocalDate startDate, LocalDate endDate, Long vehicleId) {
         List<JcbDailyLog> logs = jcbDailyLogRepository.findByWorkOrderIdAndDateBetween(workOrder.getId(), startDate, endDate);
+        if (vehicleId != null) {
+            logs = logs.stream().filter(l -> l.getVehicle() != null && l.getVehicle().getId().equals(vehicleId)).toList();
+        }
 
         Map<Long, List<JcbDailyLog>> byVehicle = logs.stream()
                 .filter(l -> l.getVehicle() != null)
@@ -136,8 +161,11 @@ public class BillingService {
 
     private List<BillLineItemDto> buildTripLineItems(WorkOrder workOrder, Party party, BigDecimal rate,
                                                       LocalDate startDate, LocalDate endDate,
-                                                      String billingBasisLabel, String unit) {
+                                                      String billingBasisLabel, String unit, Long vehicleId) {
         List<TipperDailyLog> logs = tipperDailyLogRepository.findByWorkOrderIdAndDateBetween(workOrder.getId(), startDate, endDate);
+        if (vehicleId != null) {
+            logs = logs.stream().filter(l -> l.getVehicle() != null && l.getVehicle().getId().equals(vehicleId)).toList();
+        }
 
         Map<Long, List<TipperDailyLog>> byVehicle = logs.stream()
                 .filter(l -> l.getVehicle() != null)
@@ -161,8 +189,11 @@ public class BillingService {
     }
 
     private List<BillLineItemDto> buildKmLineItems(WorkOrder workOrder, Party party, BigDecimal rate,
-                                                    LocalDate startDate, LocalDate endDate) {
+                                                    LocalDate startDate, LocalDate endDate, Long vehicleId) {
         List<TipperDailyLog> logs = tipperDailyLogRepository.findByWorkOrderIdAndDateBetween(workOrder.getId(), startDate, endDate);
+        if (vehicleId != null) {
+            logs = logs.stream().filter(l -> l.getVehicle() != null && l.getVehicle().getId().equals(vehicleId)).toList();
+        }
 
         Map<Long, List<TipperDailyLog>> byVehicle = logs.stream()
                 .filter(l -> l.getVehicle() != null)

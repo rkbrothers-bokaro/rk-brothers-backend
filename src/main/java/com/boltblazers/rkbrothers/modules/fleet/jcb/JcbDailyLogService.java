@@ -57,7 +57,11 @@ public class JcbDailyLogService {
         WorkOrder workOrder = resolveWorkOrder(request.workOrderId());
         Operator operator = resolveOperator(request.operatorId());
 
-        boolean isNoWork = Boolean.TRUE.equals(request.noWorkDone());
+        boolean isAbsent = Boolean.TRUE.equals(request.driverAbsent());
+        boolean isNoWork = isAbsent || Boolean.TRUE.equals(request.noWorkDone());
+        String description = isAbsent
+                ? (request.workDescription() != null && !request.workDescription().isBlank() ? request.workDescription() : "Driver Absent")
+                : request.workDescription();
         BigDecimal totalHrs = isNoWork ? BigDecimal.ZERO : computeTotalHrs(request.openingHrs(), request.closingHrs());
         BigDecimal avgLtrPerHr = isNoWork ? null : computeAvgLtrPerHr(request.dieselLtr(), totalHrs);
 
@@ -77,9 +81,10 @@ public class JcbDailyLogService {
                 .materialQty(isNoWork ? null : request.materialQty())
                 .materialUnit(isNoWork ? null : request.materialUnit())
                 .partyName(request.partyName())
-                .workDescription(request.workDescription())
+                .workDescription(description)
                 .receivingSlipUrl(isNoWork ? null : request.receivingSlipUrl())
                 .noWorkDone(isNoWork)
+                .driverAbsent(isAbsent)
                 .submittedBy(userRepository.getReferenceById(currentUser.getId()))
                 .build();
 
@@ -116,7 +121,11 @@ public class JcbDailyLogService {
         WorkOrder workOrder = resolveWorkOrder(request.workOrderId());
         Operator operator = resolveOperator(request.operatorId());
 
-        boolean isNoWork = Boolean.TRUE.equals(request.noWorkDone());
+        boolean isAbsent = Boolean.TRUE.equals(request.driverAbsent());
+        boolean isNoWork = isAbsent || Boolean.TRUE.equals(request.noWorkDone());
+        String updateDesc = isAbsent
+                ? (request.workDescription() != null && !request.workDescription().isBlank() ? request.workDescription() : "Driver Absent")
+                : request.workDescription();
         BigDecimal totalHrs = isNoWork ? BigDecimal.ZERO : computeTotalHrs(request.openingHrs(), request.closingHrs());
         BigDecimal avgLtrPerHr = isNoWork ? null : computeAvgLtrPerHr(request.dieselLtr(), totalHrs);
 
@@ -135,9 +144,10 @@ public class JcbDailyLogService {
         log.setMaterialQty(isNoWork ? null : request.materialQty());
         log.setMaterialUnit(isNoWork ? null : request.materialUnit());
         log.setPartyName(request.partyName());
-        log.setWorkDescription(request.workDescription());
+        log.setWorkDescription(updateDesc);
         log.setReceivingSlipUrl(isNoWork ? null : request.receivingSlipUrl());
         log.setNoWorkDone(isNoWork);
+        log.setDriverAbsent(isAbsent);
 
         log.getShifts().clear();
         if (!isNoWork) {

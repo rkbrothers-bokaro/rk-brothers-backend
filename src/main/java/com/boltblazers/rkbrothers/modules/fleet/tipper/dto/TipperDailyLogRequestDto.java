@@ -50,6 +50,8 @@ public record TipperDailyLogRequestDto(
 
         List<@Valid TipperHrEntryDto> hrEntries,
 
-        String partyName
+        String partyName,
+
+        Boolean driverAbsent
 ) {
 }

@@ -47,6 +47,8 @@ public record JcbDailyLogRequestDto(
 
         List<@Valid JcbShiftDto> shifts,
 
-        String partyName
+        String partyName,
+
+        Boolean driverAbsent
 ) {
 }
